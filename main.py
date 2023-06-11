@@ -81,8 +81,11 @@ def token_required(f):
 def hello():
     return 'Hello, World!'
 
-@app.route('/ip-info')
-# GET IP address data
+@app.route('/clear_database', methods=['GET'])
+@token_required
+def clear_database():
+    redis_client.flushdb()
+    return 'Redis database cleared.'
 
 @app.route('/report-abuse', methods=['POST'])
 @token_required
@@ -100,6 +103,10 @@ def store_data():
 
         # Store the JSON payload in Redis
         redis_client.set(key, json.dumps(data))
+
+        # Create a secondary index mapping attribute value to key
+        attribute_value = data.get('ipAddress')  # Change 'attribute' to the desired attribute name
+        redis_client.sadd('index:' + attribute_value, key)
 
         counter += 1  # Increment the counter for the next entry
 
@@ -123,6 +130,28 @@ def get_all_data():
         return jsonify({'data': data}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/ip-info/<attribute_value>', methods=['GET'])
+#Fetch specified IP address data
+@limiter.limit("5/minute")
+def get_ip_data(attribute_value):
+    # Retrieve keys from the secondary index
+    try:
+        keys = redis_client.smembers('index:' + attribute_value)  # Retrieve keys from the secondary index
+
+        # Retrieve JSON entries based on keys
+        data = []
+
+        for key in keys:
+            json_data = redis_client.get(key)
+            if json_data:
+                data.append(json.loads(json_data))
+
+        return jsonify({'data': data}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 
 if __name__ == '__main__':
     print('Server is running..')
