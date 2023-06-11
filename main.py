@@ -43,9 +43,19 @@ redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
 # Create a Flask app: Create a new Flask app by instantiating the `Flask` class:
 app = Flask(__name__)
+
 counter=0
-limiter = Limiter(app)
-limiter.key_func = get_remote_address
+
+#app.config['LIMITER_KEY_FUNC'] = get_remote_address  # Set the key function in Flask's configuration
+#limiter = Limiter(app)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "5 per minute"],
+    storage_uri="memory://",
+)
+
 app.secret_key = 'AlchemySec'
 payload = {
   "sub": "111333",
@@ -81,7 +91,7 @@ def token_required(f):
 def hello():
     return 'Hello, World!'
 
-@app.route('/clear_database', methods=['GET'])
+@app.route('/clear_database', methods=['POST'])
 @token_required
 def clear_database():
     redis_client.flushdb()
@@ -133,7 +143,7 @@ def get_all_data():
 
 @app.route('/ip-info/<attribute_value>', methods=['GET'])
 #Fetch specified IP address data
-@limiter.limit("5/minute")
+@limiter.limit("3/minute", override_defaults=True)
 def get_ip_data(attribute_value):
     # Retrieve keys from the secondary index
     try:
@@ -150,8 +160,6 @@ def get_ip_data(attribute_value):
         return jsonify({'data': data}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
 
 if __name__ == '__main__':
     print('Server is running..')
