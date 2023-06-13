@@ -91,16 +91,16 @@ def token_required(f):
 def hello():
     return 'Hello, World!'
 
-@app.route('/clear_database', methods=['POST'])
+@app.route('/clear-database', methods=['POST'])
 @token_required
 def clear_database():
     redis_client.flushdb()
     return 'Redis database cleared.'
 
-@app.route('/report-abuse', methods=['POST'])
+@app.route('/add-lookup-data', methods=['POST'])
 @token_required
-# Create IP abuse records
-def store_data():
+# Add lookup data in the database
+def store_lookup_data():
     try:
         data = request.get_json()  # Assuming the request body contains a JSON payload
 
@@ -115,7 +115,7 @@ def store_data():
         redis_client.set(key, json.dumps(data))
 
         # Create a secondary index mapping attribute value to key
-        attribute_value = data.get('ipAddress')  # Change 'attribute' to the desired attribute name
+        attribute_value = data.get('ipAddress')
         redis_client.sadd('index:' + attribute_value, key)
 
         counter += 1  # Increment the counter for the next entry
@@ -124,7 +124,41 @@ def store_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/all-abuse-records', methods=['GET'])
+@app.route('/report-abuse', methods=['POST'])
+@token_required
+# Report IP abuse data
+def report_abuse():
+    try:
+        data = request.get_json()  # Assuming the request body contains a JSON payload
+
+        # Check if the JSON payload is valid
+        if not data:
+            return jsonify({'error': 'Invalid JSON payload'}), 400
+
+        ip_address = data.get('ipAddress')
+        if not ip_address:
+            return jsonify({'error': 'Missing ipAddress attribute'}), 400
+
+        # Get the keys associated with the provided ipAddress
+        keys = redis_client.smembers('index:' + ip_address)
+
+        # Check if any keys exist for the provided ipAddress
+        if not keys:
+            return jsonify({'error': 'No data found for the provided ipAddress'}), 404
+
+        # Iterate over the keys and append the new attributes to the JSON payload
+        for key in keys:
+            stored_data = redis_client.get(key)
+            if stored_data:
+                stored_data = json.loads(stored_data)
+                stored_data.update(data)
+                redis_client.set(key, json.dumps(stored_data))
+
+        return jsonify({'message': 'Data appended successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/all-lookup-records', methods=['GET'])
 # GET all records
 def get_all_data():
     try:
@@ -141,7 +175,7 @@ def get_all_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/ip-info/<attribute_value>', methods=['GET'])
+@app.route('/ip-lookup/<attribute_value>', methods=['GET'])
 #Fetch specified IP address data
 @limiter.limit("3/minute", override_defaults=True)
 def get_ip_data(attribute_value):
