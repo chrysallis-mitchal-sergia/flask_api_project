@@ -89,7 +89,7 @@ def token_required(f):
 # =================== Endpoints mapping ===================
 @app.route('/')
 def hello():
-    return 'Hello, World!'
+    return 'Maltego Technologies Interview Challenge API'
 
 @app.route('/clear-database', methods=['POST'])
 @token_required
@@ -158,7 +158,7 @@ def report_abuse():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/all-lookup-records', methods=['GET'])
+@app.route('/all-records', methods=['GET'])
 # GET all records
 def get_all_data():
     try:
@@ -175,7 +175,7 @@ def get_all_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/ip-lookup/<attribute_value>', methods=['GET'])
+@app.route('/lookup/<attribute_value>', methods=['GET'])
 #Fetch specified IP address data
 @limiter.limit("3/minute", override_defaults=True)
 def get_ip_data(attribute_value):
