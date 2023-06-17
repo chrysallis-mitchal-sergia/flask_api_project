@@ -89,7 +89,7 @@ def token_required(f):
 # =================== Endpoints mapping ===================
 @app.route('/')
 def hello():
-    return 'Maltego Technologies Interview Challenge API'
+    return 'Goo!'
 
 @app.route('/clear-database', methods=['POST'])
 @token_required
@@ -154,7 +154,8 @@ def report_abuse():
                 stored_data.update(data)
                 redis_client.set(key, json.dumps(stored_data))
 
-        return jsonify({'message': 'Data appended successfully'}), 200
+        return jsonify({'message': 'Data appended successfully'}, {'data': stored_data}), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
