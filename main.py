@@ -1,41 +1,11 @@
 # ================= Lib imports =================
-try:
-    from flask import Flask, request, jsonify
-except ImportError:
-    print("No module named 'flask' found")
-
-try:
-    import redis
-except ImportError:
-    print("No module named 'redis' found")
-
-try:
-    import json
-except ImportError:
-    print("No module named 'json' found")
-
-try:
-    import jwt
-except ImportError:
-    print("No module named 'jwt' found")
-
-try:
-    from functools import wraps
-except ImportError:
-    print("No module named 'wraps' found")
-
-try:
-    import os
-except ImportError:
-    print("No module named 'os' found")
-
-try:
-    import secrets
-except ImportError:
-    print("No module named 'secrets' found")
-
+from flask import Flask, request, jsonify
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import redis
+import json
+import jwt
+from functools import wraps
 
 # ===============================================
 #Redis client
@@ -45,9 +15,6 @@ redis_client = redis.Redis(host='localhost', port=6379, db=0)
 app = Flask(__name__)
 
 counter=0
-
-#app.config['LIMITER_KEY_FUNC'] = get_remote_address  # Set the key function in Flask's configuration
-#limiter = Limiter(app)
 
 limiter = Limiter(
     get_remote_address,
