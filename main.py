@@ -19,14 +19,14 @@ counter=0
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["200 per day", "5 per minute"],
+    default_limits=["10 per second"],
     storage_uri="memory://",
 )
 
-app.secret_key = 'AlchemySec'
+app.secret_key = 'Secret'
 payload = {
   "sub": "111333",
-  "name": "Alchemy",
+  "name": "Shhhh",
   "iat": 1516239022
 }
 
@@ -145,7 +145,6 @@ def get_all_data():
 
 @app.route('/lookup', methods=['GET'])
 #Fetch specified IP address data
-@limiter.limit("10/minute", override_defaults=True)
 def get_ip_data():
     # Retrieve keys from the secondary index
     try:
