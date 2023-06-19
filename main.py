@@ -34,6 +34,8 @@ token = jwt.encode(payload, app.secret_key, algorithm="HS256")
 print(token)
 
 # =========================================================
+
+# =================== JWT Function ===================
 def token_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
@@ -53,7 +55,9 @@ def token_required(f):
 
     return decorator
 
-# =================== Endpoints mapping ===================
+# =========================================================
+
+# =================== Endpoint Logic ===================
 @app.route('/')
 def hello():
     return 'Goo!'
