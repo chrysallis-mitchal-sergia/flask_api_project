@@ -1,0 +1,27 @@
+{
+            "abuseCategories": [
+                1
+            ],
+            "as": {
+                "asn": 15169,
+                "domain": "https://about.google/intl/en/",
+                "name": "Google LLC",
+                "route": "8.8.8.0/24"
+            },
+            "domains": [
+                "dns1.google.com",
+                "dns2.google.com"
+            ],
+            "id": "2",
+            "ipAddress": "2.2.2.2",
+            "isp": "Google LLC",
+            "location": {
+                "city": "Mountain View",
+                "country": "US",
+                "lat": 37.40599,
+                "lng": -122.078514,
+                "postalCode": "94043",
+                "region": "California",
+                "timezone": "-07:00"
+            }
+        }
