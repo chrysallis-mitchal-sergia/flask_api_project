@@ -24,7 +24,15 @@ def get_ip_data():
                 json_data = redis_client.get(key)
                 if json_data:
                     data.append(json.loads(json_data))
-            return jsonify({'data': data}), 200
+
+            # Pagination
+            page = int(request.args.get('page', 1))
+            page_size = int(request.args.get('page_size', 10))
+            start_index = (page - 1) * page_size
+            end_index = start_index + page_size
+            paginated_data = data[start_index:end_index]
+
+            return jsonify({'data': paginated_data}), 200
 
         elif abuse_category:
             keys = redis_client.keys('data:*')
@@ -36,7 +44,16 @@ def get_ip_data():
                     stored_data = json.loads(stored_data)
                 if int(abuse_category) in stored_data.get('abuseCategories', []):
                     data.append(stored_data)
-            return jsonify({'data': data}), 200
+
+            # Pagination
+            page = int(request.args.get('page', 1))
+            page_size = int(request.args.get('page_size', 10))
+            start_index = (page - 1) * page_size
+            end_index = start_index + page_size
+            paginated_data = data[start_index:end_index]
+
+            return jsonify({'data': paginated_data}), 200
+
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
